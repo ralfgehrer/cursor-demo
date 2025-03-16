@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Jinja2 Best Practices
+
+## Overview
+Best practices for using Jinja2 templating in FastAPI
+
+## Rules
+- Use template inheritance for consistent layouts
+- Implement proper escaping to prevent XSS vulnerabilities
+- Use `include` and `import` for reusable template components
+- Leverage Jinja2's built-in filters for data processing
+- Use `autoescape` to automatically escape HTML output 

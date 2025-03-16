@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# SQLModel Best Practices
+
+## Overview
+Best practices for using SQLModel with FastAPI
+
+## Rules
+- Use `SQLModel` for both ORM and Pydantic model definitions
+- Implement proper database migrations with Alembic
+- Use `Session` dependency injection for database connections
+- Leverage `selectinload` for eager loading of related objects
+- Use `with` statements for proper session management 

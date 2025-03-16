@@ -1,0 +1,6 @@
+# Add directories or file patterns to ignore during indexing (e.g. foo/ or *.csv)
+#  Makes a best-effort attempt to exclude files from both AI features and indexing
+LICENSE
+CLAUDE.md
+.env
+.env.*

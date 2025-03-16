@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+
+- Use Chakra UI's theme customization for consistent styling
+- Leverage Chakra UI's responsive props for mobile-first design
+- Utilize Chakra UI's accessibility features like aria-labels
+- Create custom components by extending Chakra UI components 

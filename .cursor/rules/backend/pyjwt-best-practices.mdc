@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# PyJWT Best Practices
+
+## Overview
+Best practices for JWT token management with PyJWT
+
+## Rules
+- Use strong, randomly generated secret keys
+- Implement token expiration and refresh mechanisms
+- Use `algorithms=['HS256']` for symmetric key algorithms
+- Validate token claims on each request
+- Use `leeway` parameter to account for clock skew in token validation 

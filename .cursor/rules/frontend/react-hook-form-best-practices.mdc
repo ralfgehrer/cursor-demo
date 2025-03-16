@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+
+- Use the useForm hook for form state management
+- Implement custom validation rules with the register function
+- Utilize the Controller component for complex form inputs
+- Set up proper error handling and display for form validation 

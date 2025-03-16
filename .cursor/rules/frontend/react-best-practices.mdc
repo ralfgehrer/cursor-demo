@@ -1,0 +1,9 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+- Use functional components with hooks
+- Implement proper state management with useState or useReducer
+- Utilize memoization with useMemo and useCallback for performance optimization
+- Use React.lazy and Suspense for code-splitting and lazy loading 

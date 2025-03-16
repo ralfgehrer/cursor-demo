@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+description: Best practices for making HTTP requests with Axios
+- Use interceptors for global request/response handling
+- Implement proper error handling with try/catch blocks
+- Utilize cancel tokens for cancelling ongoing requests
+- Set up default configurations for common headers and base URL 

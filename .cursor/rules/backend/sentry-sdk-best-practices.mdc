@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Sentry SDK Best Practices
+
+## Overview
+Best practices for error tracking with Sentry in FastAPI
+
+## Rules
+- Initialize Sentry early in the application lifecycle
+- Use `capture_exception` for custom error reporting
+- Implement proper sampling rates to manage event volume
+- Use `before_send` to filter sensitive data from events
+- Leverage Sentry's performance monitoring for API endpoints 

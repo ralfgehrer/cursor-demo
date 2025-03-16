@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Pydantic Best Practices
+
+## Overview
+Best practices for using Pydantic for data validation and settings
+
+## Rules
+- Use `Field` to add additional validation and metadata to model fields
+- Implement custom validators for complex validation logic
+- Use `pydantic_settings` for configuration management
+- Leverage `root_validator` for cross-field validation
+- Use `BaseModel` inheritance to create reusable model structures 

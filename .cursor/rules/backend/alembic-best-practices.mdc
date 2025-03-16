@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Alembic Best Practices
+
+## Overview
+Best practices for database migrations with Alembic
+
+## Rules
+- Use `alembic revision` with meaningful messages for each migration
+- Implement `upgrade` and `downgrade` functions for reversible migrations
+- Use `op` functions for database operations to ensure compatibility
+- Regularly run `alembic check` to verify migration integrity
+- Use `alembic stamp` to mark the current database version 

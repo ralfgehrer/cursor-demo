@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+
+- Use declarative routing with Route components
+- Implement nested routes for better organization
+- Utilize the useNavigate hook for programmatic navigation
+- Set up proper error boundaries for route-specific errors 

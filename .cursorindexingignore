@@ -1,0 +1,6 @@
+# Controls only which files are indexed for search and context (same as the old .cursorignore)
+# The .cursorindexingignore file only controls which files are indexed for search and context features. This provides the same indexing control as the old .cursorignore. Use this file when you want to:
+# - Exclude large generated files from indexing
+# - Skip indexing of binary files
+# - Control which parts of your codebase are searchable
+# -  Optimize indexing performance

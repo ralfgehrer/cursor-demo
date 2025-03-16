@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+
+- Use the motion component for declarative animations
+- Implement variants for reusable animation states
+- Utilize useAnimation for imperative animation control
+- Optimize performance by using initial={false} for offscreen animations 

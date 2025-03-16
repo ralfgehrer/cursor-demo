@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+
+- Use useQuery for fetching data and managing loading states
+- Implement useMutation for handling side effects and optimistic updates
+- Utilize query keys effectively for caching and refetching
+- Set up proper error handling and retries with React Query 

@@ -1,0 +1,16 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# HTTPX Best Practices
+
+## Overview
+Best practices for making HTTP requests with HTTPX
+
+## Rules
+- Use async client for better performance in concurrent requests
+- Implement proper timeout settings to prevent hanging requests
+- Use `raise_for_status()` to handle HTTP errors gracefully
+- Leverage streaming for large payloads to reduce memory usage
+- Use `HTTPX` with `Depends` in FastAPI for consistent request handling 
