@@ -6,9 +6,9 @@ This document serves as the primary reference guide for using Cursor effectively
 
 The following documentation sources need to be added to your Cursor's @Docs reference settings for optimal AI assistance:
 
-- **API Docs** - https://api.example.com/docs
-- **Component Library** - https://ui.example.com/docs
-- **Sample ProjectAPI** - https://our-api-docs.example.com - Our internal API documentation
+- **Alembic** - https://alembic.sqlalchemy.org/en/latest/
+
+
 
 Add these references as described [here](https://docs.cursor.com/context/@-symbols/@-docs).
 
