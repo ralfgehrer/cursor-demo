@@ -14,10 +14,12 @@ import {
 } from "@chakra-ui/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { type SubmitHandler, useForm } from "react-hook-form"
+import { useEffect } from "react"
 
 import { type ApiError, type ItemCreate, ItemsService } from "../../client"
 import useCustomToast from "../../hooks/useCustomToast"
 import { handleError } from "../../utils"
+import { getMockItemData } from "../../utils/mockData"
 
 interface AddItemProps {
   isOpen: boolean
@@ -31,6 +33,7 @@ const AddItem = ({ isOpen, onClose }: AddItemProps) => {
     register,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ItemCreate>({
     mode: "onBlur",
@@ -60,6 +63,18 @@ const AddItem = ({ isOpen, onClose }: AddItemProps) => {
   const onSubmit: SubmitHandler<ItemCreate> = (data) => {
     mutation.mutate(data)
   }
+
+  const fillMockData = () => {
+    const mockData = getMockItemData()
+    setValue("title", mockData.title)
+    setValue("description", mockData.description)
+  }
+
+  useEffect(() => {
+    if (!isOpen) {
+      reset()
+    }
+  }, [isOpen, reset])
 
   return (
     <>
@@ -97,6 +112,14 @@ const AddItem = ({ isOpen, onClose }: AddItemProps) => {
                 type="text"
               />
             </FormControl>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={fillMockData}
+              mt={4}
+            >
+              Fill Mock Data
+            </Button>
           </ModalBody>
 
           <ModalFooter gap={3}>

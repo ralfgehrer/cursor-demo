@@ -162,3 +162,68 @@ def test_delete_item_not_enough_permissions(
     assert response.status_code == 400
     content = response.json()
     assert content["detail"] == "Not enough permissions"
+
+
+def test_export_items_csv(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    # Create some test items
+    item1 = create_random_item(db)
+    item2 = create_random_item(db)
+    
+    response = client.get(
+        f"{settings.API_V1_STR}/items/export/csv",
+        headers=superuser_token_headers,
+    )
+    
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/csv")
+    
+    content = response.content.decode()
+    lines = [line.strip() for line in content.splitlines()]  # handles both \n and \r\n
+    assert lines[0] == "id,title,description,owner_id"
+    assert len(lines) >= 3  # Header + at least 2 items
+    
+    # Check if our items are in the CSV
+    csv_data = [line.split(",") for line in lines[1:]]
+    item_ids = [row[0] for row in csv_data]
+    assert str(item1.id) in item_ids
+    assert str(item2.id) in item_ids
+
+
+def test_export_items_csv_normal_user(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+) -> None:
+    # Create items owned by different user
+    create_random_item(db)
+    create_random_item(db)
+    
+    response = client.get(
+        f"{settings.API_V1_STR}/items/export/csv",
+        headers=normal_user_token_headers,
+    )
+    
+    assert response.status_code == 200
+    content = response.content.decode()
+    lines = content.strip().split("\n")
+    assert lines[0] == "id,title,description,owner_id"
+    # Normal user should only see their own items (just header in this case)
+    assert len(lines) == 1
+
+
+def test_export_items_csv_invalid_params(
+    client: TestClient, superuser_token_headers: dict[str, str]
+) -> None:
+    response = client.get(
+        f"{settings.API_V1_STR}/items/export/csv?skip=-1",
+        headers=superuser_token_headers,
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Skip must be >= 0"
+
+    response = client.get(
+        f"{settings.API_V1_STR}/items/export/csv?limit=0",
+        headers=superuser_token_headers,
+    )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Limit must be > 0"

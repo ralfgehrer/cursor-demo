@@ -3,6 +3,9 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 from sqlmodel import func, select
+import csv
+from io import StringIO
+from fastapi.responses import StreamingResponse
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import Item, ItemCreate, ItemPublic, ItemsPublic, ItemUpdate, Message
@@ -40,6 +43,35 @@ def read_items(
 
     return ItemsPublic(data=items, count=count)
 
+@router.get("/export/csv", response_class=StreamingResponse)
+def export_csv(session: SessionDep, current_user: CurrentUser, skip: int = 0, limit: int = 100) -> Any:
+    """
+    Export items to CSV.
+    """
+    if skip < 0:
+        raise HTTPException(status_code=400, detail="Skip must be >= 0")
+    if limit < 1:
+        raise HTTPException(status_code=400, detail="Limit must be > 0")
+        
+    if current_user.is_superuser:
+        items = session.exec(select(Item).offset(skip).limit(limit)).all()
+    else:
+        items = session.exec(select(Item).where(Item.owner_id == current_user.id).offset(skip).limit(limit)).all()
+    
+    output = StringIO()
+    writer = csv.writer(output)
+    # Remove timestamps from headers since they don't exist
+    writer.writerow(["id", "title", "description", "owner_id"])
+    
+    for item in items:
+        writer.writerow([
+            item.id,
+            item.title, 
+            item.description,
+            item.owner_id
+        ])
+    
+    return StreamingResponse(iter([output.getvalue()]), media_type="text/csv")
 
 @router.get("/{id}", response_model=ItemPublic)
 def read_item(session: SessionDep, current_user: CurrentUser, id: uuid.UUID) -> Any:
