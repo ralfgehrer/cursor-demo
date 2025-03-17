@@ -1,1 +1,1 @@
-Can you please create a Hello World function and great me as sir.
+Create a 'Hello, World!' function that greets me with a fun salutation, like 'Your Highness.'
