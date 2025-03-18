@@ -6,8 +6,53 @@ from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
 from app.models import Item, ItemCreate, ItemPublic, ItemsPublic, ItemUpdate, Message
+from io import StringIO
+import csv
+from fastapi.responses import StreamingResponse
+
 
 router = APIRouter()
+
+
+@router.get("/export")
+def export_item_as_csv(
+    session: SessionDep, 
+    current_user: CurrentUser,
+    skip: int = 0,
+    limit: int = 100
+) -> StreamingResponse:
+    """
+    Export items as CSV.
+    """
+    if skip < 0:
+        raise HTTPException(status_code=400, detail="Skip must be >= 0")
+    if limit < 1:
+        raise HTTPException(status_code=400, detail="Limit must be > 0")
+        
+    if current_user.is_superuser:
+        items = session.exec(select(Item).offset(skip).limit(limit)).all()
+    else:
+        items = session.exec(
+            select(Item)
+            .where(Item.owner_id == current_user.id)
+            .offset(skip)
+            .limit(limit)
+        ).all()
+        
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(["id", "title", "description", "owner_id"])
+    for item in items:
+        writer.writerow([item.id, item.title, item.description, item.owner_id])
+    
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": "attachment;filename=items.csv"
+        }
+    )
 
 
 @router.get("/", response_model=ItemsPublic)

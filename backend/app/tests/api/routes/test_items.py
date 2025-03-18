@@ -162,3 +162,53 @@ def test_delete_item_not_enough_permissions(
     assert response.status_code == 400
     content = response.json()
     assert content["detail"] == "Not enough permissions"
+
+
+def test_export_items_csv(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    # Create some test items
+    item1 = create_random_item(db)
+    item2 = create_random_item(db)
+    
+    response = client.get(
+        f"{settings.API_V1_STR}/items/export",
+        headers=superuser_token_headers,
+    )
+    
+    assert response.status_code == 200
+    assert response.headers["Content-Type"] == "text/csv"
+    assert response.headers["Content-Disposition"] == "attachment;filename=items.csv"
+    
+    # Parse CSV content
+    content = response.content.decode()
+    csv_lines = content.strip().split("\n")
+    
+    # Check header
+    assert csv_lines[0] == "id,title,description,owner_id"
+    
+    # Convert response to set of tuples for easier comparison
+    csv_data = {tuple(line.split(",")) for line in csv_lines[1:]}
+    
+    # Verify items are in the CSV
+    assert (str(item1.id), item1.title, item1.description, str(item1.owner_id)) in csv_data
+    assert (str(item2.id), item2.title, item2.description, str(item2.owner_id)) in csv_data
+
+
+def test_export_items_csv_normal_user(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+) -> None:
+    # Create items owned by different users
+    item1 = create_random_item(db)  # Not owned by normal user
+    
+    response = client.get(
+        f"{settings.API_V1_STR}/items/export",
+        headers=normal_user_token_headers,
+    )
+    
+    assert response.status_code == 200
+    content = response.content.decode()
+    csv_lines = content.strip().split("\n")
+    
+    # Normal user shouldn't see item1 in their export
+    assert str(item1.id) not in content
