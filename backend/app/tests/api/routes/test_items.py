@@ -1,4 +1,5 @@
 import uuid
+from typing import Dict
 
 from fastapi.testclient import TestClient
 from sqlmodel import Session
@@ -162,3 +163,59 @@ def test_delete_item_not_enough_permissions(
     assert response.status_code == 400
     content = response.json()
     assert content["detail"] == "Not enough permissions"
+
+
+def test_export_items_csv(
+    client: TestClient,
+    db_session: Session,
+    normal_user: User,
+    superuser: User,
+    normal_user_token_headers: Dict[str, str],
+    superuser_token_headers: Dict[str, str]
+) -> None:
+    """Test CSV export endpoint with various permissions and pagination."""
+    # Create test items
+    item1 = create_random_item(db_session, owner_id=normal_user.id)
+    item2 = create_random_item(db_session, owner_id=normal_user.id)
+    item3 = create_random_item(db_session, owner_id=superuser.id)
+
+    # Test unauthorized access
+    r = client.get(f"{settings.API_V1_STR}/items/export-csv")
+    assert r.status_code == 401
+
+    # Test normal user - should only see their items
+    r = client.get(f"{settings.API_V1_STR}/items/export-csv", headers=normal_user_token_headers)
+    assert r.status_code == 200
+    assert r.headers["Content-Type"] == "text/csv"
+    assert r.headers["Content-Disposition"] == "attachment; filename=items.csv"
+    
+    content = r.content.decode()
+    csv_lines = content.strip().split("\n")
+    assert len(csv_lines) == 3  # Header + 2 items
+    assert csv_lines[0] == "id,title,description,owner_id"
+    assert item1.id in content and item2.id in content
+    assert item3.id not in content
+
+    # Test superuser - should see all items
+    r = client.get(f"{settings.API_V1_STR}/items/export-csv", headers=superuser_token_headers)
+    assert r.status_code == 200
+    content = r.content.decode()
+    csv_lines = content.strip().split("\n")
+    assert len(csv_lines) == 4  # Header + 3 items
+    assert item1.id in content and item2.id in content and item3.id in content
+
+    # Test pagination
+    r = client.get(f"{settings.API_V1_STR}/items/export-csv?skip=1&limit=1", headers=superuser_token_headers)
+    assert r.status_code == 200
+    content = r.content.decode()
+    csv_lines = content.strip().split("\n")
+    assert len(csv_lines) == 2  # Header + 1 item
+
+    # Test error cases
+    r = client.get(f"{settings.API_V1_STR}/items/export-csv?skip=-1", headers=normal_user_token_headers)
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Skip must be >= 0"
+
+    r = client.get(f"{settings.API_V1_STR}/items/export-csv?limit=0", headers=normal_user_token_headers) 
+    assert r.status_code == 400
+    assert r.json()["detail"] == "Limit must be > 0"

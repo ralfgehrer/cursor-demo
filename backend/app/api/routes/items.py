@@ -1,7 +1,10 @@
+import csv
 import uuid
+from io import StringIO
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
@@ -9,6 +12,40 @@ from app.models import Item, ItemCreate, ItemPublic, ItemsPublic, ItemUpdate, Me
 
 router = APIRouter()
 
+@router.get("/export-csv")
+def export_items_csv(
+    session: SessionDep, 
+    current_user: CurrentUser,
+    skip: int = 0,
+    limit: int = 100
+) -> Any:
+    """
+    Export items as CSV with pagination support.
+    """
+    if skip < 0:
+        raise HTTPException(status_code=400, detail="Skip must be >= 0")
+    if limit <= 0:
+        raise HTTPException(status_code=400, detail="Limit must be > 0")
+        
+    if current_user.is_superuser:
+        statement = select(Item).offset(skip).limit(limit)
+        items = session.exec(statement).all()
+    else:
+        statement = select(Item).where(Item.owner_id == current_user.id).offset(skip).limit(limit)
+        items = session.exec(statement).all()
+
+    output = StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['id', 'title', 'description', 'owner_id'])  # Change 'name' to 'title'
+    for item in items:
+        writer.writerow([item.id, item.title, item.description, item.owner_id])
+    
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=items.csv"}
+    )
 
 @router.get("/", response_model=ItemsPublic)
 def read_items(
