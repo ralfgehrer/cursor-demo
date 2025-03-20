@@ -22,6 +22,8 @@ Add these references as described [here](https://docs.cursor.com/context/@-symbo
   - *Example:* `@.cursor/roles/Architekt/plan_plan_act_pattern.md Plan the user authentication feature + more contexct`
 
 ### For Developers
+- **[@.cursor/roles/Dev/pair_programming_buddy.md](./../roles/Dev/pair_programming_buddy.md)** - Use AI as Pair Programming buddy
+  - *Example:*  `@.cursor/roles/Dev/pair_programming_buddy.md I'm implementing a user authentication feature in React with Firebase. Here's what I have so far @Diff // @Code`
 - **[@.cursor/roles/Dev/code_refactoring_steps.md](./../roles/Dev/code_refactoring_steps.md)** - Improves code quality and maintainability
   - *Example:* `@.cursor/roles/Dev/code_refactoring_steps.md Refactor the user authentication code`
 - **[@.cursor/roles/Dev/create_hello_world.md](./../roles/Dev/create_hello_world.md)** - Creates simple starter code
