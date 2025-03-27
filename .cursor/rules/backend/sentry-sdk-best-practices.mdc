@@ -1,6 +1,6 @@
 ---
 description: 
-globs: 
+globs: backend/*
 alwaysApply: false
 ---
 # Sentry SDK Best Practices
