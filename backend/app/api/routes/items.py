@@ -9,6 +9,56 @@ from app.models import Item, ItemCreate, ItemPublic, ItemsPublic, ItemUpdate, Me
 
 router = APIRouter()
 
+import io
+import csv
+
+@router.get("/export", response_class=Response)
+def export_items_csv(
+    session: SessionDep, 
+    current_user: CurrentUser,
+    skip: int = 0,
+    limit: int = 100
+) -> Any:
+    """
+    Export items to CSV.
+    """
+    if skip < 0:
+        raise HTTPException(status_code=400, detail="Skip must be >= 0")
+    if limit < 1:
+        raise HTTPException(status_code=400, detail="Limit must be > 0")
+    if limit > 1000:
+        raise HTTPException(status_code=400, detail="Limit cannot exceed 1000")
+
+    if current_user.is_superuser:
+        items = session.exec(select(Item).offset(skip).limit(limit)).all()
+    else:
+        items = session.exec(
+            select(Item)
+            .where(Item.owner_id == current_user.id)
+            .offset(skip)
+            .limit(limit)
+        ).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Write header row
+    if items:
+        writer.writerow(items[0].__dict__.keys())
+    
+    # Write data rows
+    for item in items:
+        writer.writerow(item.__dict__.values())
+
+    # Prepare response
+    response = Response(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={
+            'Content-Disposition': 'attachment; filename="items.csv"'
+        }
+    )
+    return response
 
 @router.get("/", response_model=ItemsPublic)
 def read_items(
