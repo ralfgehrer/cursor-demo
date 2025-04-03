@@ -1,0 +1,96 @@
+---
+description: 
+globs: frontend/*
+alwaysApply: false
+---
+# Playwright Test Guidelines
+
+## File Organization
+- All tests are stored in `frontend/tests/`
+- Test files named as `{feature}.spec.ts`
+- Utility files in `frontend/tests/utils/`
+- Auth setup in `auth.setup.ts`
+- Config in `config.ts`
+
+## Basic Test Structure
+```typescript
+import { test, expect } from '@playwright/test';
+
+test.describe('Feature Name', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/route');
+  });
+
+  test('should do something', async ({ page }) => {
+    // Test implementation
+  });
+});
+```
+
+## Selector Priority
+1. Role-based: `getByRole('button', { name: 'Submit' })`
+2. Label-based: `getByLabel('Email')`
+3. Text-based: `getByText('Success')`
+4. Placeholder: `getByPlaceholder('Enter email')`
+
+## Common Test Patterns
+
+### UI Verification
+```typescript
+await expect(page.getByRole('heading')).toBeVisible();
+await expect(page.getByRole('table')).toBeVisible();
+```
+
+### Form Interactions
+```typescript
+await page.getByLabel('Field').fill('value');
+await page.getByRole('button', { name: 'Submit' }).click();
+```
+
+### Success/Error States
+```typescript
+await expect(page.getByText('Success message')).toBeVisible();
+await expect(page.getByText('Error message')).toBeVisible();
+```
+
+### CRUD Operations
+- Create: Test form submission and success message
+- Read: Verify data display in tables/lists
+- Update: Test edit functionality and data persistence
+- Delete: Verify removal and confirmation flows
+
+### Navigation
+```typescript
+await page.goto('/route');
+await page.waitForURL('/expected-route');
+```
+
+## Authentication
+- Use `auth.setup.ts` for authentication setup
+- Auth state stored in `playwright/.auth/user.json`
+- Credentials from environment variables
+
+## Test Categories to Include
+1. Happy path scenarios
+2. Validation/error cases
+3. Edge cases
+4. UI/display verification
+5. Data persistence
+6. Navigation flows
+7. Permission checks
+
+## Best Practices
+- One assertion per test when possible
+- Clear, descriptive test names
+- Use `beforeEach` for common setup
+- Isolate tests (no dependencies between tests)
+- Use dynamic values for unique data: `Date.now()`
+- Verify success/error messages
+- Check both UI updates and data persistence
+
+## Environment Setup
+- Config from `config.ts`
+- Environment variables in `../../.env`
+- Required variables:
+  - `FIRST_SUPERUSER`
+  - `FIRST_SUPERUSER_PASSWORD`
