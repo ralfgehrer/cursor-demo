@@ -91,6 +91,16 @@ def update_item(
     session.refresh(item)
     return item
 
+@router.delete("/", response_model=Message)
+def delete_all_items(session: SessionDep, current_user: CurrentUser) -> Message:
+    """
+    Delete all items.
+    """
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+    session.query(Item).delete()
+    session.commit()
+    return Message(message="All items deleted successfully")
 
 @router.delete("/{id}")
 def delete_item(
