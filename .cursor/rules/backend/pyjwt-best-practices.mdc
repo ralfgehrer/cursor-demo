@@ -1,6 +1,6 @@
 ---
 description: 
-globs: backend/*
+globs: backend/**/*
 alwaysApply: false
 ---
 # PyJWT Best Practices

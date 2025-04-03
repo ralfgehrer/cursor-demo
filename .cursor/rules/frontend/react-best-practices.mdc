@@ -1,6 +1,6 @@
 ---
 description: 
-globs: frontend/*
+globs: frontend/**/*
 alwaysApply: false
 ---
 - Use functional components with hooks

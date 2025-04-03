@@ -1,6 +1,6 @@
 ---
 description: 
-globs: frontend/*
+globs: frontend/**/*
 alwaysApply: false
 ---
 description: Best practices for making HTTP requests with Axios
