@@ -107,3 +107,49 @@ def delete_item(
     session.delete(item)
     session.commit()
     return Message(message="Item deleted successfully")
+
+@router.get("/export/csv")
+def export_items_to_csv(
+    session: SessionDep, current_user: CurrentUser
+) -> Any:
+    """
+    Export all items to CSV.
+    """
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+    
+    items = session.query(Item).all()
+    if not items:
+        raise HTTPException(status_code=404, detail="No items found")
+    
+    import csv
+    from io import StringIO
+    
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Write header
+    writer.writerow(["id", "title", "description", "owner_id"])
+    
+    # Write data
+    for item in items:
+        writer.writerow([str(item.id), item.title, item.description, str(item.owner_id)])
+    
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=items.csv"}
+    )
+
+
+@router.delete("/")
+def delete_all_items(session: SessionDep, current_user: CurrentUser) -> Message:
+    """
+    Delete all items.
+    """
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+    session.query(Item).delete()
+    session.commit()
+    return Message(message="All items deleted successfully")
