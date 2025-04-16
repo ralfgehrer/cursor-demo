@@ -162,3 +162,84 @@ def test_delete_item_not_enough_permissions(
     assert response.status_code == 400
     content = response.json()
     assert content["detail"] == "Not enough permissions"
+
+
+def test_export_items_csv(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    """
+    Test successful CSV export of items by superuser.
+    """
+    # Create some test items
+    items = [create_random_item(db) for _ in range(3)]
+    
+    response = client.get(
+        f"{settings.API_V1_STR}/items/export/csv",
+        headers=superuser_token_headers,
+    )
+    assert response.status_code == 200
+    assert response.headers["Content-Type"] == "text/csv"
+    assert response.headers["Content-Disposition"] == "attachment; filename=items.csv"
+    
+    # Parse CSV content
+    content = response.content.decode()
+    csv_lines = content.strip().split("\n")
+    assert len(csv_lines) == 4  # Header + 3 items
+    assert csv_lines[0] == "id,title,description,owner_id,created_at,updated_at"
+
+
+def test_export_items_csv_not_enough_permissions(
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    """
+    Test CSV export permission check for non-superuser.
+    """
+    response = client.get(
+        f"{settings.API_V1_STR}/items/export/csv",
+        headers=normal_user_token_headers,
+    )
+    assert response.status_code == 400
+    content = response.json()
+    assert content["detail"] == "Not enough permissions"
+
+
+def test_delete_all_items(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    """
+    Test successful bulk deletion of items by superuser.
+    """
+    # Create some test items
+    [create_random_item(db) for _ in range(3)]
+    
+    response = client.delete(
+        f"{settings.API_V1_STR}/items/",
+        headers=superuser_token_headers,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert content["message"] == "All items deleted successfully"
+    
+    # Verify items were deleted
+    response = client.get(
+        f"{settings.API_V1_STR}/items/",
+        headers=superuser_token_headers,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert len(content["data"]) == 0
+
+
+def test_delete_all_items_not_enough_permissions(
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    """
+    Test bulk delete permission check for non-superuser.
+    """
+    response = client.delete(
+        f"{settings.API_V1_STR}/items/",
+        headers=normal_user_token_headers,
+    )
+    assert response.status_code == 400
+    content = response.json()
+    assert content["detail"] == "Not enough permissions"

@@ -1,7 +1,9 @@
 import uuid
 from typing import Any
+import io
+import csv
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 from sqlmodel import func, select
 
 from app.api.deps import CurrentUser, SessionDep
@@ -91,6 +93,57 @@ def update_item(
     session.refresh(item)
     return item
 
+@router.get("/export/csv")
+def export_items_csv(session: SessionDep, current_user: CurrentUser) -> Response:
+    """
+    Export all items as CSV.
+    """
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+    
+    try:
+        items = session.exec(select(Item)).all()
+        output = io.StringIO()
+        writer = csv.writer(output)
+        
+        # Write header
+        writer.writerow(["id", "title", "description", "owner_id", "created_at", "updated_at"])
+        
+        # Write data
+        for item in items:
+            writer.writerow([
+                str(item.id),
+                item.title,
+                item.description,
+                str(item.owner_id),
+                item.created_at.isoformat(),
+                item.updated_at.isoformat() if item.updated_at else None
+            ])
+        
+        output.seek(0)
+        return Response(
+            content=output.getvalue(),
+            media_type="text/csv",
+            headers={"Content-Disposition": "attachment; filename=items.csv"}
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating CSV: {str(e)}")
+
+
+@router.delete("/")
+def delete_all_items(session: SessionDep, current_user: CurrentUser) -> Message:
+    """
+    Delete all items.
+    """
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+    # Replace query with select
+    statement = select(Item)
+    items = session.exec(statement).all()
+    for item in items:
+        session.delete(item)
+    session.commit()
+    return Message(message="All items deleted successfully")
 
 @router.delete("/{id}")
 def delete_item(
