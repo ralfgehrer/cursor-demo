@@ -162,3 +162,49 @@ def test_delete_item_not_enough_permissions(
     assert response.status_code == 400
     content = response.json()
     assert content["detail"] == "Not enough permissions"
+
+
+def test_delete_all_items(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    # Create some test items
+    create_random_item(db)
+    create_random_item(db)
+    create_random_item(db)
+    
+    response = client.delete(
+        f"{settings.API_V1_STR}/items/",
+        headers=superuser_token_headers,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert content["message"] == "All items deleted successfully"
+
+
+def test_delete_all_items_with_limit(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    # Create some test items
+    create_random_item(db)
+    create_random_item(db)
+    create_random_item(db)
+    
+    response = client.delete(
+        f"{settings.API_V1_STR}/items/?limit=2",
+        headers=superuser_token_headers,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert content["message"] == "2 items deleted successfully"
+
+
+def test_delete_all_items_not_enough_permissions(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+) -> None:
+    response = client.delete(
+        f"{settings.API_V1_STR}/items/",
+        headers=normal_user_token_headers,
+    )
+    assert response.status_code == 400
+    content = response.json()
+    assert content["detail"] == "Not enough permissions"

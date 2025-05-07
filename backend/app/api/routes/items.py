@@ -91,6 +91,25 @@ def update_item(
     session.refresh(item)
     return item
 
+@router.delete("/")
+def delete_all_items(
+    session: SessionDep, 
+    current_user: CurrentUser,
+    limit: int = Query(default=None, ge=1, description="Maximum number of items to delete")
+) -> Any:
+    """
+    Delete all items with optional limit.
+    """
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+    
+    query = session.query(Item)
+    if limit:
+        query = query.limit(limit)
+    query.delete()
+    session.commit()
+    
+    return Message(message=f"{limit if limit else 'All'} items deleted successfully")
 
 @router.delete("/{id}")
 def delete_item(
